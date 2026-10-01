@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Rapor Input Nilai</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader {
+            border-top-color: #3498db;
+            animation: spinner 1.5s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen">
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-5 rounded-lg flex items-center gap-3 shadow-lg">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8"></div>
+            <span class="text-gray-700 font-semibold">Memproses data...</span>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4">
+
+        <!-- VIEW 1: FORM LOGIN -->
+        <div id="view-login" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-xl shadow-md">
+            <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">e-Rapor Login</h2>
+            <form id="form-login" onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Username</label>
+                    <input type="text" id="username" required autocomplete="username" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                    <input type="password" id="password" required autocomplete="current-password" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">Masuk</button>
+            </form>
+        </div>
+
+        <!-- VIEW 2: DASHBOARD -->
+        <div id="view-dashboard" class="hidden">
+            <!-- Header -->
+            <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">Penginputan e-Rapor</h1>
+                    <p class="text-sm text-gray-500">Wali Kelas: <span id="user-nama" class="font-semibold text-blue-600"></span> | Rombel: <span id="user-rombel" class="font-bold text-blue-600"></span></p>
+                </div>
+                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition">Keluar</button>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="tab-btn-nilai" onclick="switchTab('nilai')" class="py-2 px-6 font-bold border-b-2 border-blue-600 text-blue-600 focus:outline-none">Input Nilai Mapel</button>
+                <button id="tab-btn-absensi" onclick="switchTab('absensi')" class="py-2 px-6 font-semibold text-gray-500 hover:text-blue-600 focus:outline-none">Absensi & Catatan Walas</button>
+            </div>
+
+            <!-- TAB CONTENT 1: INPUT NILAI MAPEL -->
+            <div id="tab-content-nilai">
+                <!-- Filter Mapel & Max Score Setup -->
+                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+                    <div class="flex flex-wrap gap-4 items-center mb-4">
+                        <label class="font-semibold text-gray-700">Pilih Mata Pelajaran:</label>
+                        <select id="select-mapel" onchange="loadNilai()" class="border px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </select>
+                    </div>
+
+                    <!-- Setup Skor Maksimal -->
+                    <div class="bg-blue-50 p-3 rounded-lg flex flex-wrap gap-4 items-center text-sm border border-blue-100">
+                        <span class="font-bold text-blue-800">Batas Skor Maksimal:</span>
+                        <label>Betul-Salah: <input type="number" id="max-bs" value="20" oninput="recalculateAll()" class="w-16 p-1 border rounded text-center ml-1 font-bold"></label>
+                        <label>PG: <input type="number" id="max-pg" value="50" oninput="recalculateAll()" class="w-16 p-1 border rounded text-center ml-1 font-bold"></label>
+                        <label>Essay: <input type="number" id="max-essay" value="30" oninput="recalculateAll()" class="w-16 p-1 border rounded text-center ml-1 font-bold"></label>
+                        <span class="text-gray-500 font-semibold">(Total Maksimal: <span id="total-max">100</span>)</span>
+                    </div>
+                </div>
+
+                <!-- Form Nilai Table -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <form id="form-nilai" onsubmit="handleSaveNilai(event)">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-sm text-gray-600">
+                                        <th class="p-3">No</th>
+                                        <th class="p-3">NISN</th>
+                                        <th class="p-3">Nama Siswa</th>
+                                        <th class="p-3 text-center">Betul-Salah</th>
+                                        <th class="p-3 text-center">PG</th>
+                                        <th class="p-3 text-center">Essay</th>
+                                        <th class="p-3 text-center bg-gray-50">Jumlah</th>
+                                        <th class="p-3 text-center bg-blue-50">Nilai Akhir</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body-nilai"></tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 bg-gray-50 border-t flex justify-end">
+                            <button type="submit" class="bg-green-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-700 transition">Simpan Semua Nilai</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT 2: ABSENSI & CATATAN WALAS -->
+            <div id="tab-content-absensi" class="hidden">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <form id="form-absensi" onsubmit="handleSaveAbsensi(event)">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-sm text-gray-600">
+                                        <th class="p-3">No</th>
+                                        <th class="p-3">NISN</th>
+                                        <th class="p-3">Nama Siswa</th>
+                                        <th class="p-3 text-center">Sakit</th>
+                                        <th class="p-3 text-center">Izin</th>
+                                        <th class="p-3 text-center">Alpa</th>
+                                        <th class="p-3 text-center bg-gray-50">Jumlah Absen</th>
+                                        <th class="p-3">Catatan Wali Kelas</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body-absensi"></tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 bg-gray-50 border-t flex justify-end">
+                            <button type="submit" class="bg-green-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-700 transition">Simpan Absensi & Catatan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxxi0n55Hmw9Vr77OkzVrFUe_qyFP5lqxtXWs_1A548G-A0qa5nEPBPqo1owzPqtqw9/exec";
+
+        let currentSession = null;
+        let siswaData = [];
+
+        function showLoading(show) {
+            document.getElementById("loading").classList.toggle("hidden", !show);
+        }
+
+        async function apiCall(data) {
+            showLoading(true);
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    mode: "cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(data),
+                    redirect: "follow"
+                });
+                const result = await response.json();
+                showLoading(false);
+                return result;
+            } catch (err) {
+                showLoading(false);
+                alert("Terjadi kesalahan koneksi!");
+                console.error(err);
+                return null;
+            }
+        }
+
+        // --- AUTH ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            const res = await apiCall({ action: "login", username, password });
+
+            if (res && res.success) {
+                currentSession = res.data;
+                document.getElementById("user-nama").innerText = currentSession.nama;
+                document.getElementById("user-rombel").innerText = currentSession.rombel;
+                
+                document.getElementById("view-login").classList.add("hidden");
+                document.getElementById("view-dashboard").classList.remove("hidden");
+
+                await initDashboard();
+            } else if (res) {
+                alert(res.message || "Login gagal!");
+            }
+        }
+
+        function logout() {
+            currentSession = null;
+            document.getElementById("view-dashboard").classList.add("hidden");
+            document.getElementById("view-login").classList.remove("hidden");
+            document.getElementById("form-login").reset();
+        }
+
+        // --- DASHBOARD NAVIGATION ---
+        function switchTab(tab) {
+            const btnNilai = document.getElementById("tab-btn-nilai");
+            const btnAbsensi = document.getElementById("tab-btn-absensi");
+            const contentNilai = document.getElementById("tab-content-nilai");
+            const contentAbsensi = document.getElementById("tab-content-absensi");
+
+            if (tab === 'nilai') {
+                btnNilai.className = "py-2 px-6 font-bold border-b-2 border-blue-600 text-blue-600 focus:outline-none";
+                btnAbsensi.className = "py-2 px-6 font-semibold text-gray-500 hover:text-blue-600 focus:outline-none";
+                contentNilai.classList.remove("hidden");
+                contentAbsensi.classList.add("hidden");
+            } else {
+                btnAbsensi.className = "py-2 px-6 font-bold border-b-2 border-blue-600 text-blue-600 focus:outline-none";
+                btnNilai.className = "py-2 px-6 font-semibold text-gray-500 hover:text-blue-600 focus:outline-none";
+                contentAbsensi.classList.remove("hidden");
+                contentNilai.classList.add("hidden");
+                loadAbsensi();
+            }
+        }
+
+        async function initDashboard() {
+            const res = await apiCall({ action: "getSiswaAndMapel", rombel: currentSession.rombel });
+            if (res && res.success) {
+                siswaData = res.siswa;
+                const mapelSelect = document.getElementById("select-mapel");
+                mapelSelect.innerHTML = res.mapel.map(m => `<option value="${m}">${m}</option>`).join("");
+                loadNilai();
+            }
+        }
+
+        // --- SISTEM NILAI ---
+        async function loadNilai() {
+            const mapel = document.getElementById("select-mapel").value;
+            if (!mapel) return;
+
+            const res = await apiCall({ action: "getNilai", rombel: currentSession.rombel, mapel });
+            const scores = (res && res.success) ? res.nilai : {};
+            renderTableNilai(scores);
+        }
+
+        function renderTableNilai(scores) {
+            const tbody = document.getElementById("table-body-nilai");
+            tbody.innerHTML = "";
+
+            if (!siswaData || siswaData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-gray-500">Tidak ada data siswa.</td></tr>`;
+                return;
+            }
+
+            siswaData.forEach((siswa, index) => {
+                const s = scores[siswa.id] || { bs: 0, pg: 0, essay: 0 };
+                const tr = document.createElement("tr");
+                tr.className = "border-b hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 text-sm">${index + 1}</td>
+                    <td class="p-3 text-sm font-mono">${siswa.nisn}</td>
+                    <td class="p-3 text-sm font-semibold">${siswa.nama}</td>
+                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="score-input bs w-20 border rounded text-center p-1" value="${s.bs}" min="0" oninput="calcRowNilai(this)"></td>
+                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="score-input pg w-20 border rounded text-center p-1" value="${s.pg}" min="0" oninput="calcRowNilai(this)"></td>
+                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="score-input essay w-20 border rounded text-center p-1" value="${s.essay}" min="0" oninput="calcRowNilai(this)"></td>
+                    <td class="p-3 text-center font-bold bg-gray-50 jml-cell">0</td>
+                    <td class="p-3 text-center font-bold bg-blue-50 nilai-cell text-blue-600">0</td>
+                `;
+                tbody.appendChild(tr);
+                calcRowNilai(tbody.lastElementChild.querySelector('.score-input'));
+            });
+        }
+
+        // KARTU FORMULA KALKULASI NILAI
+        function calcRowNilai(element) {
+            const tr = element.closest("tr");
+            const bs = parseFloat(tr.querySelector(".bs").value) || 0;
+            const pg = parseFloat(tr.querySelector(".pg").value) || 0;
+            const essay = parseFloat(tr.querySelector(".essay").value) || 0;
+
+            const maxBs = parseFloat(document.getElementById("max-bs").value) || 1;
+            const maxPg = parseFloat(document.getElementById("max-pg").value) || 1;
+            const maxEssay = parseFloat(document.getElementById("max-essay").value) || 1;
+
+            const maxTotal = maxBs + maxPg + maxEssay;
+            document.getElementById("total-max").innerText = maxTotal;
+
+            // 1. Rumus Jumlah = Betul-Salah + PG + Essay
+            const jumlah = bs + pg + essay;
+
+            // 2. Rumus Nilai = Jumlah / (Max BS + Max PG + Max Essay) * 100
+            const nilai = (jumlah / maxTotal) * 100;
+
+            tr.querySelector(".jml-cell").innerText = jumlah;
+            tr.querySelector(".nilai-cell").innerText = nilai.toFixed(1);
+        }
+
+        function recalculateAll() {
+            document.querySelectorAll("#table-body-nilai tr").forEach(tr => {
+                const input = tr.querySelector(".score-input");
+                if (input) calcRowNilai(input);
+            });
+        }
+
+        async function handleSaveNilai(e) {
+            e.preventDefault();
+            const mapel = document.getElementById("select-mapel").value;
+            const payloadScores = [];
+
+            document.querySelectorAll("#table-body-nilai tr").forEach(tr => {
+                const input = tr.querySelector(".score-input");
+                if (input) {
+                    payloadScores.push({
+                        idSiswa: input.getAttribute("data-id"),
+                        bs: tr.querySelector(".bs").value,
+                        pg: tr.querySelector(".pg").value,
+                        essay: tr.querySelector(".essay").value,
+                        jumlah: tr.querySelector(".jml-cell").innerText,
+                        nilai: tr.querySelector(".nilai-cell").innerText
+                    });
+                }
+            });
+
+            const res = await apiCall({ action: "saveNilai", rombel: currentSession.rombel, mapel, scores: payloadScores });
+            if (res && res.success) alert("Berhasil! " + res.message);
+        }
+
+        // --- SISTEM ABSENSI & CATATAN ---
+        async function loadAbsensi() {
+            const res = await apiCall({ action: "getAbsensi", rombel: currentSession.rombel });
+            const absensiData = (res && res.success) ? res.absensi : {};
+            renderTableAbsensi(absensiData);
+        }
+
+        function renderTableAbsensi(absensiData) {
+            const tbody = document.getElementById("table-body-absensi");
+            tbody.innerHTML = "";
+
+            if (!siswaData || siswaData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-gray-500">Tidak ada data siswa.</td></tr>`;
+                return;
+            }
+
+            siswaData.forEach((siswa, index) => {
+                const a = absensiData[siswa.id] || { sakit: 0, izin: 0, alpa: 0, catatan: "" };
+                const tr = document.createElement("tr");
+                tr.className = "border-b hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 text-sm">${index + 1}</td>
+                    <td class="p-3 text-sm font-mono">${siswa.nisn}</td>
+                    <td class="p-3 text-sm font-semibold">${siswa.nama}</td>
+                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="absen-input sakit w-16 border rounded text-center p-1" value="${a.sakit}" min="0" oninput="calcAbsen(this)"></td>
+                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="absen-input izin w-16 border rounded text-center p-1" value="${a.izin}" min="0" oninput="calcAbsen(this)"></td>
+                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="absen-input alpa w-16 border rounded text-center p-1" value="${a.alpa}" min="0" oninput="calcAbsen(this)"></td>
+                    <td class="p-3 text-center font-bold bg-gray-50 jml-absen-cell">0</td>
+                    <td class="p-2"><input type="text" class="catatan w-full border rounded p-1 text-sm" value="${a.catatan}" placeholder="Catatan perkembangan..."></td>
+                `;
+                tbody.appendChild(tr);
+                calcAbsen(tbody.lastElementChild.querySelector('.absen-input'));
+            });
+        }
+
+        // Kalkulasi Jumlah Absensi Otomatis
+        function calcAbsen(element) {
+            const tr = element.closest("tr");
+            const sakit = parseFloat(tr.querySelector(".sakit").value) || 0;
+            const izin = parseFloat(tr.querySelector(".izin").value) || 0;
+            const alpa = parseFloat(tr.querySelector(".alpa").value) || 0;
+
+            tr.querySelector(".jml-absen-cell").innerText = sakit + izin + alpa;
+        }
+
+        async function handleSaveAbsensi(e) {
+            e.preventDefault();
+            const payloadAbsensi = [];
+
+            document.querySelectorAll("#table-body-absensi tr").forEach(tr => {
+                const input = tr.querySelector(".absen-input");
+                if (input) {
+                    payloadAbsensi.push({
+                        idSiswa: input.getAttribute("data-id"),
+                        sakit: tr.querySelector(".sakit").value,
+                        izin: tr.querySelector(".izin").value,
+                        alpa: tr.querySelector(".alpa").value,
+                        catatan: tr.querySelector(".catatan").value
+                    });
+                }
+            });
+
+            const res = await apiCall({ action: "saveAbsensi", rombel: currentSession.rombel, absensi: payloadAbsensi });
+            if (res && res.success) alert("Berhasil! " + res.message);
+        }
+    </script>
+</body>
+</html>
