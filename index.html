@@ -3,135 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Rapor Input Nilai</title>
+    <title>E-Rapor Digital</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .loader {
-            border-top-color: #3498db;
-            animation: spinner 1.5s linear infinite;
+        body { font-family: 'Inter', sans-serif; }
+        
+        .loader-spinner {
+            border-top-color: #3b82f6;
+            animation: spinner 1s linear infinite;
         }
         @keyframes spinner {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Notifikasi Custom Animation */
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-animate {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Input styling */
+        input:focus, select:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
     </style>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Loading Overlay -->
-    <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white p-5 rounded-lg flex items-center gap-3 shadow-lg">
-            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8"></div>
-            <span class="text-gray-700 font-semibold">Memproses data...</span>
+    <!-- OVERLAY LOADING -->
+    <div id="loading" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-all">
+        <div class="bg-white p-6 rounded-2xl flex items-center gap-4 shadow-2xl border border-slate-100">
+            <div class="loader-spinner ease-linear rounded-full border-4 border-t-4 border-slate-200 h-9 w-9"></div>
+            <span class="text-slate-700 font-medium">Memproses data...</span>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto p-4">
+    <!-- POP-UP NOTIFIKASI TOAST (Satu Tempat Notif Elegan) -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm"></div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
 
         <!-- VIEW 1: FORM LOGIN -->
-        <div id="view-login" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-xl shadow-md">
-            <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">e-Rapor Login</h2>
-            <form id="form-login" onsubmit="handleLogin(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Username</label>
-                    <input type="text" id="username" required autocomplete="username" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div id="view-login" class="max-w-md mx-auto my-12 bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-slate-100">
+            <div class="text-center mb-8">
+                <!-- Logo Sekolah (Diambil dari lokasi file yang sama di GitHub) -->
+                <img src="./logo.png" alt="Logo Sekolah" class="w-24 h-24 mx-auto mb-4 object-contain drop-shadow-md" onerror="this.onerror=null; this.src='https://via.placeholder.com/100?text=LOGO';">
+                <h2 class="text-2xl font-bold text-slate-800 tracking-tight">e-Rapor Digital</h2>
+                <p class="text-sm text-slate-500 mt-1">Sistem Input Nilai & Absensi Siswa</p>
+            </div>
+
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-slate-700 text-xs font-semibold uppercase tracking-wider mb-2">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid font-sm fa-user"></i></span>
+                        <input type="text" id="username" required autocomplete="username" placeholder="Masukkan username" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none transition">
+                    </div>
                 </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input type="password" id="password" required autocomplete="current-password" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div>
+                    <label class="block text-slate-700 text-xs font-semibold uppercase tracking-wider mb-2">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid font-sm fa-lock"></i></span>
+                        <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none transition">
+                    </div>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">Masuk</button>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-indigo-500/40 hover:from-blue-700 hover:to-indigo-700 transition duration-200 flex justify-center items-center gap-2">
+                    <span>Masuk ke Sistem</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
             </form>
         </div>
 
-        <!-- VIEW 2: DASHBOARD -->
-        <div id="view-dashboard" class="hidden">
-            <!-- Header -->
-            <div class="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center mb-6">
-                <div>
-                    <h1 class="text-xl font-bold text-gray-800">Penginputan e-Rapor</h1>
-                    <p class="text-sm text-gray-500">Wali Kelas: <span id="user-nama" class="font-semibold text-blue-600"></span> | Rombel: <span id="user-rombel" class="font-bold text-blue-600"></span></p>
+        <!-- VIEW 2: DASHBOARD UTAMA -->
+        <div id="view-dashboard" class="hidden space-y-6">
+            
+            <!-- Header Elegan -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <img src="./logo.png" alt="Logo Sekolah" class="w-12 h-12 object-contain hidden sm:block" onerror="this.onerror=null; this.src='https://via.placeholder.com/48?text=LOGO';">
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-800">Penginputan e-Rapor</h1>
+                        <p class="text-xs text-slate-500 mt-0.5">Wali Kelas: <span id="user-nama" class="font-semibold text-blue-600"></span> | Rombel: <span id="user-rombel" class="font-bold text-indigo-600"></span></p>
+                    </div>
                 </div>
-                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition">Keluar</button>
+                <button onclick="logout()" class="px-4 py-2 rounded-xl text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition flex items-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Keluar</span>
+                </button>
             </div>
 
-            <!-- Tab Navigation -->
-            <div class="flex border-b border-gray-200 mb-6">
-                <button id="tab-btn-nilai" onclick="switchTab('nilai')" class="py-2 px-6 font-bold border-b-2 border-blue-600 text-blue-600 focus:outline-none">Input Nilai Mapel</button>
-                <button id="tab-btn-absensi" onclick="switchTab('absensi')" class="py-2 px-6 font-semibold text-gray-500 hover:text-blue-600 focus:outline-none">Absensi & Catatan Walas</button>
+            <!-- Tab Navigation dengan Desain Modern -->
+            <div class="flex bg-slate-200/60 p-1 rounded-xl w-fit gap-1">
+                <button id="tab-btn-nilai" onclick="switchTab('nilai')" class="py-2.5 px-5 font-semibold text-xs rounded-lg transition-all bg-white text-blue-600 shadow-sm">
+                    <i class="fa-solid fa-pen-to-square mr-1.5"></i> Input Nilai Mapel
+                </button>
+                <button id="tab-btn-absensi" onclick="switchTab('absensi')" class="py-2.5 px-5 font-semibold text-xs rounded-lg transition-all text-slate-600 hover:text-slate-900">
+                    <i class="fa-solid fa-clipboard-user mr-1.5"></i> Absensi & Catatan Walas
+                </button>
             </div>
 
             <!-- TAB CONTENT 1: INPUT NILAI MAPEL -->
-            <div id="tab-content-nilai">
+            <div id="tab-content-nilai" class="space-y-6">
                 <!-- Filter Mapel & Max Score Setup -->
-                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-                    <div class="flex flex-wrap gap-4 items-center mb-4">
-                        <label class="font-semibold text-gray-700">Pilih Mata Pelajaran:</label>
-                        <select id="select-mapel" onchange="loadNilai()" class="border px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <label class="text-sm font-semibold text-slate-700">Pilih Mata Pelajaran:</label>
+                        <select id="select-mapel" onchange="loadNilai()" class="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-sm font-medium focus:bg-white focus:outline-none transition">
                         </select>
                     </div>
 
-                    <!-- Setup Skor Maksimal -->
-                    <div class="bg-blue-50 p-3 rounded-lg flex flex-wrap gap-4 items-center text-sm border border-blue-100">
-                        <span class="font-bold text-blue-800">Batas Skor Maksimal:</span>
-                        <label>Betul-Salah: <input type="number" id="max-bs" value="20" oninput="recalculateAll()" class="w-16 p-1 border rounded text-center ml-1 font-bold"></label>
-                        <label>PG: <input type="number" id="max-pg" value="50" oninput="recalculateAll()" class="w-16 p-1 border rounded text-center ml-1 font-bold"></label>
-                        <label>Essay: <input type="number" id="max-essay" value="30" oninput="recalculateAll()" class="w-16 p-1 border rounded text-center ml-1 font-bold"></label>
-                        <span class="text-gray-500 font-semibold">(Total Maksimal: <span id="total-max">100</span>)</span>
+                    <!-- Setup Batas Skor Maksimal -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60 flex flex-wrap gap-6 items-center text-xs">
+                        <span class="font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-sliders text-blue-500"></i> Batas Maksimal Nilai:
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-600">Betul-Salah:</span>
+                            <input type="number" id="max-bs" value="20" oninput="recalculateAll()" class="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-bold bg-white">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-600">PG:</span>
+                            <input type="number" id="max-pg" value="50" oninput="recalculateAll()" class="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-bold bg-white">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-600">Essay:</span>
+                            <input type="number" id="max-essay" value="30" oninput="recalculateAll()" class="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-bold bg-white">
+                        </div>
+                        <div class="text-slate-500 font-semibold border-l pl-4 border-slate-300">
+                            Total Maksimal: <span id="total-max" class="text-blue-600 font-bold">100</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Form Nilai Table -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- Form Tabel Nilai -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                     <form id="form-nilai" onsubmit="handleSaveNilai(event)">
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
+                            <table class="w-full text-left text-sm">
                                 <thead>
-                                    <tr class="bg-gray-100 border-b text-sm text-gray-600">
-                                        <th class="p-3">No</th>
-                                        <th class="p-3">NISN</th>
-                                        <th class="p-3">Nama Siswa</th>
-                                        <th class="p-3 text-center">Betul-Salah</th>
-                                        <th class="p-3 text-center">PG</th>
-                                        <th class="p-3 text-center">Essay</th>
-                                        <th class="p-3 text-center bg-gray-50">Jumlah</th>
-                                        <th class="p-3 text-center bg-blue-50">Nilai Akhir</th>
+                                    <tr class="bg-slate-50 border-b border-slate-200/80 text-xs text-slate-500 uppercase tracking-wider">
+                                        <th class="p-4 w-12 text-center">No</th>
+                                        <th class="p-4 w-32">NISN</th>
+                                        <th class="p-4">Nama Siswa</th>
+                                        <th class="p-4 text-center w-28">Betul-Salah</th>
+                                        <th class="p-4 text-center w-28">PG</th>
+                                        <th class="p-4 text-center w-28">Essay</th>
+                                        <th class="p-4 text-center w-28 bg-slate-100/70">Jumlah</th>
+                                        <th class="p-4 text-center w-28 bg-blue-50/70 text-blue-700">Nilai Akhir</th>
                                     </tr>
                                 </thead>
-                                <tbody id="table-body-nilai"></tbody>
+                                <tbody id="table-body-nilai" class="divide-y divide-slate-100"></tbody>
                             </table>
                         </div>
-                        <div class="p-4 bg-gray-50 border-t flex justify-end">
-                            <button type="submit" class="bg-green-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-700 transition">Simpan Semua Nilai</button>
+                        <div class="p-4 bg-slate-50 border-t border-slate-200/80 flex justify-end">
+                            <button type="submit" class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:from-emerald-700 hover:to-teal-700 transition flex items-center gap-2 text-sm">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span>Simpan Semua Nilai</span>
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
 
             <!-- TAB CONTENT 2: ABSENSI & CATATAN WALAS -->
-            <div id="tab-content-absensi" class="hidden">
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div id="tab-content-absensi" class="hidden space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                     <form id="form-absensi" onsubmit="handleSaveAbsensi(event)">
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
+                            <table class="w-full text-left text-sm">
                                 <thead>
-                                    <tr class="bg-gray-100 border-b text-sm text-gray-600">
-                                        <th class="p-3">No</th>
-                                        <th class="p-3">NISN</th>
-                                        <th class="p-3">Nama Siswa</th>
-                                        <th class="p-3 text-center">Sakit</th>
-                                        <th class="p-3 text-center">Izin</th>
-                                        <th class="p-3 text-center">Alpa</th>
-                                        <th class="p-3 text-center bg-gray-50">Jumlah Absen</th>
-                                        <th class="p-3">Catatan Wali Kelas</th>
+                                    <tr class="bg-slate-50 border-b border-slate-200/80 text-xs text-slate-500 uppercase tracking-wider">
+                                        <th class="p-4 w-12 text-center">No</th>
+                                        <th class="p-4 w-32">NISN</th>
+                                        <th class="p-4">Nama Siswa</th>
+                                        <th class="p-4 text-center w-24">Sakit</th>
+                                        <th class="p-4 text-center w-24">Izin</th>
+                                        <th class="p-4 text-center w-24">Alpa</th>
+                                        <th class="p-4 text-center w-28 bg-slate-100/70">Total Absen</th>
+                                        <th class="p-4">Catatan Wali Kelas</th>
                                     </tr>
                                 </thead>
-                                <tbody id="table-body-absensi"></tbody>
+                                <tbody id="table-body-absensi" class="divide-y divide-slate-100"></tbody>
                             </table>
                         </div>
-                        <div class="p-4 bg-gray-50 border-t flex justify-end">
-                            <button type="submit" class="bg-green-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-700 transition">Simpan Absensi & Catatan</button>
+                        <div class="p-4 bg-slate-50 border-t border-slate-200/80 flex justify-end">
+                            <button type="submit" class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:from-emerald-700 hover:to-teal-700 transition flex items-center gap-2 text-sm">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span>Simpan Absensi & Catatan</span>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -145,6 +214,30 @@
 
         let currentSession = null;
         let siswaData = [];
+
+        // --- SISTEM NOTIFIKASI TOAST ELEGAN ---
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+
+            const isSuccess = type === "success";
+            const bgColor = isSuccess ? "bg-emerald-600" : "bg-red-600";
+            const icon = isSuccess ? "fa-circle-check" : "fa-circle-xmark";
+
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm toast-animate`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-lg"></i>
+                <span class="font-medium">${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transition = "opacity 0.4s ease";
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
 
         function showLoading(show) {
             document.getElementById("loading").classList.toggle("hidden", !show);
@@ -165,13 +258,26 @@
                 return result;
             } catch (err) {
                 showLoading(false);
-                alert("Terjadi kesalahan koneksi!");
+                showToast("Terjadi kesalahan koneksi!", "error");
                 console.error(err);
                 return null;
             }
         }
 
-        // --- AUTH ---
+        // --- AUTO LOGIN / PERSISTENCE SESSION ---
+        window.addEventListener("DOMContentLoaded", () => {
+            const savedSession = localStorage.getItem("erapor_session");
+            if (savedSession) {
+                try {
+                    currentSession = JSON.parse(savedSession);
+                    displayDashboard();
+                } catch (e) {
+                    localStorage.removeItem("erapor_session");
+                }
+            }
+        });
+
+        // --- AUTHENTICATION ---
         async function handleLogin(e) {
             e.preventDefault();
             const username = document.getElementById("username").value.trim();
@@ -181,26 +287,35 @@
 
             if (res && res.success) {
                 currentSession = res.data;
-                document.getElementById("user-nama").innerText = currentSession.nama;
-                document.getElementById("user-rombel").innerText = currentSession.rombel;
-                
-                document.getElementById("view-login").classList.add("hidden");
-                document.getElementById("view-dashboard").classList.remove("hidden");
-
-                await initDashboard();
+                // Simpan ke Sesi Browser (LocalStorage)
+                localStorage.setItem("erapor_session", JSON.stringify(currentSession));
+                showToast("Login Berhasil! Selamat Datang.");
+                displayDashboard();
             } else if (res) {
-                alert(res.message || "Login gagal!");
+                showToast(res.message || "Login gagal!", "error");
             }
+        }
+
+        function displayDashboard() {
+            document.getElementById("user-nama").innerText = currentSession.nama;
+            document.getElementById("user-rombel").innerText = currentSession.rombel;
+            
+            document.getElementById("view-login").classList.add("hidden");
+            document.getElementById("view-dashboard").classList.remove("hidden");
+
+            initDashboard();
         }
 
         function logout() {
             currentSession = null;
+            localStorage.removeItem("erapor_session"); // Hapus Sesi
             document.getElementById("view-dashboard").classList.add("hidden");
             document.getElementById("view-login").classList.remove("hidden");
             document.getElementById("form-login").reset();
+            showToast("Berhasil Keluar.");
         }
 
-        // --- DASHBOARD NAVIGATION ---
+        // --- NAVIGATION TABS ---
         function switchTab(tab) {
             const btnNilai = document.getElementById("tab-btn-nilai");
             const btnAbsensi = document.getElementById("tab-btn-absensi");
@@ -208,13 +323,13 @@
             const contentAbsensi = document.getElementById("tab-content-absensi");
 
             if (tab === 'nilai') {
-                btnNilai.className = "py-2 px-6 font-bold border-b-2 border-blue-600 text-blue-600 focus:outline-none";
-                btnAbsensi.className = "py-2 px-6 font-semibold text-gray-500 hover:text-blue-600 focus:outline-none";
+                btnNilai.className = "py-2.5 px-5 font-semibold text-xs rounded-lg transition-all bg-white text-blue-600 shadow-sm";
+                btnAbsensi.className = "py-2.5 px-5 font-semibold text-xs rounded-lg transition-all text-slate-600 hover:text-slate-900";
                 contentNilai.classList.remove("hidden");
                 contentAbsensi.classList.add("hidden");
             } else {
-                btnAbsensi.className = "py-2 px-6 font-bold border-b-2 border-blue-600 text-blue-600 focus:outline-none";
-                btnNilai.className = "py-2 px-6 font-semibold text-gray-500 hover:text-blue-600 focus:outline-none";
+                btnAbsensi.className = "py-2.5 px-5 font-semibold text-xs rounded-lg transition-all bg-white text-blue-600 shadow-sm";
+                btnNilai.className = "py-2.5 px-5 font-semibold text-xs rounded-lg transition-all text-slate-600 hover:text-slate-900";
                 contentAbsensi.classList.remove("hidden");
                 contentNilai.classList.add("hidden");
                 loadAbsensi();
@@ -231,7 +346,7 @@
             }
         }
 
-        // --- SISTEM NILAI ---
+        // --- SISTEM INPUT NILAI ---
         async function loadNilai() {
             const mapel = document.getElementById("select-mapel").value;
             if (!mapel) return;
@@ -246,30 +361,29 @@
             tbody.innerHTML = "";
 
             if (!siswaData || siswaData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-gray-500">Tidak ada data siswa.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">Tidak ada data siswa.</td></tr>`;
                 return;
             }
 
             siswaData.forEach((siswa, index) => {
                 const s = scores[siswa.id] || { bs: 0, pg: 0, essay: 0 };
                 const tr = document.createElement("tr");
-                tr.className = "border-b hover:bg-gray-50";
+                tr.className = "hover:bg-slate-50/80 transition";
                 tr.innerHTML = `
-                    <td class="p-3 text-sm">${index + 1}</td>
-                    <td class="p-3 text-sm font-mono">${siswa.nisn}</td>
-                    <td class="p-3 text-sm font-semibold">${siswa.nama}</td>
-                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="score-input bs w-20 border rounded text-center p-1" value="${s.bs}" min="0" oninput="calcRowNilai(this)"></td>
-                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="score-input pg w-20 border rounded text-center p-1" value="${s.pg}" min="0" oninput="calcRowNilai(this)"></td>
-                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="score-input essay w-20 border rounded text-center p-1" value="${s.essay}" min="0" oninput="calcRowNilai(this)"></td>
-                    <td class="p-3 text-center font-bold bg-gray-50 jml-cell">0</td>
-                    <td class="p-3 text-center font-bold bg-blue-50 nilai-cell text-blue-600">0</td>
+                    <td class="p-3 text-center text-slate-400 font-medium">${index + 1}</td>
+                    <td class="p-3 font-mono text-xs text-slate-600">${siswa.nisn}</td>
+                    <td class="p-3 font-semibold text-slate-800">${siswa.nama}</td>
+                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="score-input bs w-20 border border-slate-200 rounded-lg text-center p-1.5 focus:bg-white" value="${s.bs}" min="0" oninput="calcRowNilai(this)"></td>
+                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="score-input pg w-20 border border-slate-200 rounded-lg text-center p-1.5 focus:bg-white" value="${s.pg}" min="0" oninput="calcRowNilai(this)"></td>
+                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="score-input essay w-20 border border-slate-200 rounded-lg text-center p-1.5 focus:bg-white" value="${s.essay}" min="0" oninput="calcRowNilai(this)"></td>
+                    <td class="p-3 text-center font-bold bg-slate-50/70 text-slate-700 jml-cell">0</td>
+                    <td class="p-3 text-center font-extrabold bg-blue-50/70 text-blue-600 nilai-cell">0</td>
                 `;
                 tbody.appendChild(tr);
                 calcRowNilai(tbody.lastElementChild.querySelector('.score-input'));
             });
         }
 
-        // KARTU FORMULA KALKULASI NILAI
         function calcRowNilai(element) {
             const tr = element.closest("tr");
             const bs = parseFloat(tr.querySelector(".bs").value) || 0;
@@ -283,10 +397,7 @@
             const maxTotal = maxBs + maxPg + maxEssay;
             document.getElementById("total-max").innerText = maxTotal;
 
-            // 1. Rumus Jumlah = Betul-Salah + PG + Essay
             const jumlah = bs + pg + essay;
-
-            // 2. Rumus Nilai = Jumlah / (Max BS + Max PG + Max Essay) * 100
             const nilai = (jumlah / maxTotal) * 100;
 
             tr.querySelector(".jml-cell").innerText = jumlah;
@@ -320,7 +431,7 @@
             });
 
             const res = await apiCall({ action: "saveNilai", rombel: currentSession.rombel, mapel, scores: payloadScores });
-            if (res && res.success) alert("Berhasil! " + res.message);
+            if (res && res.success) showToast(res.message);
         }
 
         // --- SISTEM ABSENSI & CATATAN ---
@@ -335,30 +446,29 @@
             tbody.innerHTML = "";
 
             if (!siswaData || siswaData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-gray-500">Tidak ada data siswa.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">Tidak ada data siswa.</td></tr>`;
                 return;
             }
 
             siswaData.forEach((siswa, index) => {
                 const a = absensiData[siswa.id] || { sakit: 0, izin: 0, alpa: 0, catatan: "" };
                 const tr = document.createElement("tr");
-                tr.className = "border-b hover:bg-gray-50";
+                tr.className = "hover:bg-slate-50/80 transition";
                 tr.innerHTML = `
-                    <td class="p-3 text-sm">${index + 1}</td>
-                    <td class="p-3 text-sm font-mono">${siswa.nisn}</td>
-                    <td class="p-3 text-sm font-semibold">${siswa.nama}</td>
-                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="absen-input sakit w-16 border rounded text-center p-1" value="${a.sakit}" min="0" oninput="calcAbsen(this)"></td>
-                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="absen-input izin w-16 border rounded text-center p-1" value="${a.izin}" min="0" oninput="calcAbsen(this)"></td>
-                    <td class="p-2"><input type="number" data-id="${siswa.id}" class="absen-input alpa w-16 border rounded text-center p-1" value="${a.alpa}" min="0" oninput="calcAbsen(this)"></td>
-                    <td class="p-3 text-center font-bold bg-gray-50 jml-absen-cell">0</td>
-                    <td class="p-2"><input type="text" class="catatan w-full border rounded p-1 text-sm" value="${a.catatan}" placeholder="Catatan perkembangan..."></td>
+                    <td class="p-3 text-center text-slate-400 font-medium">${index + 1}</td>
+                    <td class="p-3 font-mono text-xs text-slate-600">${siswa.nisn}</td>
+                    <td class="p-3 font-semibold text-slate-800">${siswa.nama}</td>
+                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="absen-input sakit w-16 border border-slate-200 rounded-lg text-center p-1.5 focus:bg-white" value="${a.sakit}" min="0" oninput="calcAbsen(this)"></td>
+                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="absen-input izin w-16 border border-slate-200 rounded-lg text-center p-1.5 focus:bg-white" value="${a.izin}" min="0" oninput="calcAbsen(this)"></td>
+                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="absen-input alpa w-16 border border-slate-200 rounded-lg text-center p-1.5 focus:bg-white" value="${a.alpa}" min="0" oninput="calcAbsen(this)"></td>
+                    <td class="p-3 text-center font-bold bg-slate-50/70 text-slate-700 jml-absen-cell">0</td>
+                    <td class="p-2"><input type="text" class="catatan w-full border border-slate-200 rounded-lg p-1.5 text-sm focus:bg-white" value="${a.catatan}" placeholder="Tuliskan catatan perkembangan siswa..."></td>
                 `;
                 tbody.appendChild(tr);
                 calcAbsen(tbody.lastElementChild.querySelector('.absen-input'));
             });
         }
 
-        // Kalkulasi Jumlah Absensi Otomatis
         function calcAbsen(element) {
             const tr = element.closest("tr");
             const sakit = parseFloat(tr.querySelector(".sakit").value) || 0;
@@ -386,7 +496,7 @@
             });
 
             const res = await apiCall({ action: "saveAbsensi", rombel: currentSession.rombel, absensi: payloadAbsensi });
-            if (res && res.success) alert("Berhasil! " + res.message);
+            if (res && res.success) showToast(res.message);
         }
     </script>
 </body>
