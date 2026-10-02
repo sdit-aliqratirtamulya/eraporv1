@@ -41,7 +41,13 @@
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black relative">
+
+    <!-- JAM DIGITAL POJOK KANAN ATAS -->
+    <div class="absolute top-4 right-4 md:top-6 md:right-6 z-40 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-cyan-500/30 glow-box text-right pointer-events-none">
+        <div id="clock-time" class="font-orbitron text-base md:text-lg font-bold text-cyan-400 tracking-wider glow-text-cyan">00:00:00</div>
+        <div id="clock-date" class="text-[10px] md:text-xs text-slate-400 font-medium">Senin, 1 Jan 2026</div>
+    </div>
 
     <!-- OVERLAY LOADING -->
     <div id="loading" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center hidden z-50">
@@ -52,10 +58,10 @@
     </div>
 
     <!-- TOAST NOTIFIKASI -->
-    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm"></div>
+    <div id="toast-container" class="fixed top-5 left-5 z-50 flex flex-col gap-3 max-w-sm"></div>
 
     <!-- MAIN CONTAINER -->
-    <div class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+    <div class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 pt-16 md:pt-20">
 
         <!-- VIEW 1: FORM LOGIN -->
         <div id="view-login" class="max-w-md mx-auto my-12 bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl border border-cyan-500/30 glow-box">
@@ -213,10 +219,26 @@
     </div>
 
     <script>
+        // URL GAS TERBARU
         const API_URL = "https://script.google.com/macros/s/AKfycbxxi0n55Hmw9Vr77OkzVrFUe_qyFP5lqxtXWs_1A548G-A0qa5nEPBPqo1owzPqtqw9/exec";
 
         let currentSession = null;
         let siswaData = [];
+
+        // KODE JAM DIGITAL REAL-TIME
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('clock-time').innerText = `${hours}:${minutes}:${seconds}`;
+
+            const options = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
+            document.getElementById('clock-date').innerText = now.toLocaleDateString('id-ID', options);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
         function showToast(message, type = "success") {
             const container = document.getElementById("toast-container");
