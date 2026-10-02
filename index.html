@@ -164,11 +164,12 @@
                                         <th class="p-4 w-12 text-center">No</th>
                                         <th class="p-4 w-32">NISN</th>
                                         <th class="p-4">Nama Siswa</th>
-                                        <th class="p-4 text-center w-28">Betul-Salah</th>
-                                        <th class="p-4 text-center w-28">PG</th>
-                                        <th class="p-4 text-center w-28">Essay</th>
-                                        <th class="p-4 text-center w-28 bg-slate-950">Jumlah</th>
+                                        <th class="p-4 text-center w-24">Betul-Salah</th>
+                                        <th class="p-4 text-center w-24">PG</th>
+                                        <th class="p-4 text-center w-24">Essay</th>
+                                        <th class="p-4 text-center w-24 bg-slate-950">Jumlah</th>
                                         <th class="p-4 text-center w-28 bg-cyan-950/40 text-cyan-300">Nilai Akhir</th>
+                                        <th class="p-4 text-center w-28 bg-emerald-950/40 text-emerald-300">Nilai Rapor</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-body-nilai" class="divide-y divide-slate-800/60"></tbody>
@@ -219,13 +220,11 @@
     </div>
 
     <script>
-        // URL GAS TERBARU
         const API_URL = "https://script.google.com/macros/s/AKfycbxxi0n55Hmw9Vr77OkzVrFUe_qyFP5lqxtXWs_1A548G-A0qa5nEPBPqo1owzPqtqw9/exec";
 
         let currentSession = null;
         let siswaData = [];
 
-        // KODE JAM DIGITAL REAL-TIME
         function updateClock() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -372,12 +371,26 @@
             renderTableNilai(scores);
         }
 
+        function getNilaiBantu(rombel) {
+            const match = rombel ? rombel.match(/\d+/) : null;
+            const tingkat = match ? parseInt(match[0]) : 1;
+
+            if (tingkat === 1 || tingkat === 2) {
+                return { min: 75, max: 85 };
+            } else if (tingkat === 3 || tingkat === 4) {
+                return { min: 78, max: 90 };
+            } else if (tingkat === 5 || tingkat === 6) {
+                return { min: 80, max: 95 };
+            }
+            return { min: 75, max: 85 };
+        }
+
         function renderTableNilai(scores) {
             const tbody = document.getElementById("table-body-nilai");
             tbody.innerHTML = "";
 
             if (!siswaData || siswaData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">Tidak ada data siswa.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-500">Tidak ada data siswa.</td></tr>`;
                 return;
             }
 
@@ -389,22 +402,22 @@
                     <td class="p-3 text-center text-slate-500 font-medium">${index + 1}</td>
                     <td class="p-3 font-mono text-xs text-slate-400">${siswa.nisn}</td>
                     <td class="p-3 font-semibold text-slate-200">${siswa.nama}</td>
-                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="score-input bs w-20 border border-slate-800 rounded-lg text-center p-1.5 bg-slate-950 text-cyan-300" value="${s.bs}" min="0" oninput="calcRowNilai(this)"></td>
-                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="score-input pg w-20 border border-slate-800 rounded-lg text-center p-1.5 bg-slate-950 text-cyan-300" value="${s.pg}" min="0" oninput="calcRowNilai(this)"></td>
-                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="score-input essay w-20 border border-slate-800 rounded-lg text-center p-1.5 bg-slate-950 text-cyan-300" value="${s.essay}" min="0" oninput="calcRowNilai(this)"></td>
+                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="score-input bs w-20 border border-slate-800 rounded-lg text-center p-1.5 bg-slate-950 text-cyan-300" value="${s.bs}" min="0" oninput="recalculateAll()"></td>
+                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="score-input pg w-20 border border-slate-800 rounded-lg text-center p-1.5 bg-slate-950 text-cyan-300" value="${s.pg}" min="0" oninput="recalculateAll()"></td>
+                    <td class="p-2 text-center"><input type="number" data-id="${siswa.id}" class="score-input essay w-20 border border-slate-800 rounded-lg text-center p-1.5 bg-slate-950 text-cyan-300" value="${s.essay}" min="0" oninput="recalculateAll()"></td>
                     <td class="p-3 text-center font-bold bg-slate-950 text-slate-300 jml-cell">0</td>
                     <td class="p-3 text-center font-extrabold bg-cyan-950/40 text-cyan-400 nilai-cell glow-text-cyan">0</td>
+                    <td class="p-3 text-center font-extrabold bg-emerald-950/40 text-emerald-400 rapor-cell glow-text-emerald">0</td>
                 `;
                 tbody.appendChild(tr);
-                calcRowNilai(tbody.lastElementChild.querySelector('.score-input'));
             });
+
+            recalculateAll();
         }
 
-        function calcRowNilai(element) {
-            const tr = element.closest("tr");
-            const bs = parseFloat(tr.querySelector(".bs").value) || 0;
-            const pg = parseFloat(tr.querySelector(".pg").value) || 0;
-            const essay = parseFloat(tr.querySelector(".essay").value) || 0;
+        function recalculateAll() {
+            const rows = document.querySelectorAll("#table-body-nilai tr");
+            if (rows.length === 0) return;
 
             const maxBs = parseFloat(document.getElementById("max-bs").value) || 1;
             const maxPg = parseFloat(document.getElementById("max-pg").value) || 1;
@@ -413,17 +426,43 @@
             const maxTotal = maxBs + maxPg + maxEssay;
             document.getElementById("total-max").innerText = maxTotal;
 
-            const jumlah = bs + pg + essay;
-            const nilai = (jumlah / maxTotal) * 100;
+            let nilaiAkhirList = [];
 
-            tr.querySelector(".jml-cell").innerText = jumlah;
-            tr.querySelector(".nilai-cell").innerText = nilai.toFixed(1);
-        }
+            // Step 1: Hitung Nilai Akhir untuk tiap siswa
+            rows.forEach(tr => {
+                const bsInput = tr.querySelector(".bs");
+                if (!bsInput) return;
 
-        function recalculateAll() {
-            document.querySelectorAll("#table-body-nilai tr").forEach(tr => {
-                const input = tr.querySelector(".score-input");
-                if (input) calcRowNilai(input);
+                const bs = parseFloat(tr.querySelector(".bs").value) || 0;
+                const pg = parseFloat(tr.querySelector(".pg").value) || 0;
+                const essay = parseFloat(tr.querySelector(".essay").value) || 0;
+
+                const jumlah = bs + pg + essay;
+                const nilaiAkhir = (jumlah / maxTotal) * 100;
+
+                tr.querySelector(".jml-cell").innerText = jumlah;
+                tr.querySelector(".nilai-cell").innerText = nilaiAkhir.toFixed(1);
+
+                nilaiAkhirList.push({ tr, nilaiAkhir });
+            });
+
+            // Step 2: Ambil Nilai Akhir Terendah & Tertinggi di Kelas
+            const nilaiArray = nilaiAkhirList.map(item => item.nilaiAkhir);
+            const nilaiTerendah = Math.min(...nilaiArray);
+            const nilaiTertinggi = Math.max(...nilaiArray);
+
+            // Step 3: Tentukan Nilai Bantu
+            const { min: nbMin, max: nbMax } = getNilaiBantu(currentSession ? currentSession.rombel : "");
+
+            // Step 4: Hitung Nilai Rapor dengan Rumus Interpolasi Linier
+            nilaiAkhirList.forEach(item => {
+                let nilaiRapor = nbMin;
+
+                if (nilaiTertinggi !== nilaiTerendah) {
+                    nilaiRapor = nbMin + ((item.nilaiAkhir - nilaiTerendah) / (nilaiTertinggi - nilaiTerendah)) * (nbMax - nbMin);
+                }
+
+                item.tr.querySelector(".rapor-cell").innerText = nilaiRapor.toFixed(1);
             });
         }
 
@@ -441,7 +480,8 @@
                         pg: tr.querySelector(".pg").value,
                         essay: tr.querySelector(".essay").value,
                         jumlah: tr.querySelector(".jml-cell").innerText,
-                        nilai: tr.querySelector(".nilai-cell").innerText
+                        nilai: tr.querySelector(".nilai-cell").innerText,
+                        nilaiRapor: tr.querySelector(".rapor-cell").innerText
                     });
                 }
             });
